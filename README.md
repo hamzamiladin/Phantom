@@ -17,10 +17,8 @@
 
 ## Demo
 
-Recursion tree animation generated from a 10-line fibonacci function:
-
 <p align="center">
-  <img src="docs/assets/demo.gif" alt="Recursion tree animation demo" width="800" />
+  <img src="docs/assets/hero.gif" alt="Phantom screen recording" width="800" />
 </p>
 
 ---
@@ -50,6 +48,12 @@ The animation shows a grid-based shortest path visualization. The right panel br
 <img src="docs/assets/viewer-fibonacci.png" alt="Viewer — Fibonacci recursion with tree visualization and pattern badges" width="100%" />
 
 Recursive calls visualized as growing circles. The explanation panel shows strategy badges (`self-reference`, `recursion`), code context, and builds up to the key insight: how memoization reduces 25 calls to 9.
+
+### Recursion tree animation
+
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Recursion tree animation" width="800" />
+</p>
 
 ### Viewer features
 
