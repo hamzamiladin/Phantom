@@ -23,7 +23,9 @@
 
 Recursion tree animation generated from a 10-line fibonacci function:
 
-https://github.com/hamzamiladin/Phantom/raw/main/docs/assets/demo.mp4
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="Recursion tree animation demo" width="800" />
+</p>
 
 ---
 
