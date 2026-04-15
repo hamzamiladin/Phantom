@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/assets/viewer-fibonacci.png" alt="Phantom — animated code explanation" width="100%" />
-</p>
-
 <h1 align="center">Phantom</h1>
 
 <p align="center">
