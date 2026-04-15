@@ -198,7 +198,7 @@ phantom/
 - **pnpm** 9+
 - **Python** 3.12+
 - **uv** — `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- **Anthropic API key** — [console.anthropic.com](https://console.anthropic.com)
+- **An API key** from any supported provider (see Configure below)
 
 ### Install
 
@@ -211,10 +211,53 @@ cd packages/engine && uv sync && cd ../..
 
 ### Configure
 
-Create `apps/web/.env.local`:
+#### Engine (`packages/engine/.env`)
+
+Copy the example and fill in your provider's key:
 
 ```env
-ANTHROPIC_API_KEY=sk-ant-...
+# Pipeline mode — set to true to skip AI calls and use local heuristics (no API key needed)
+DEMO_MODE=false
+
+# Pick one provider and fill in its key
+# Free options:
+#   groq       — Llama 3.3 70B, 14,400 req/day free  → console.groq.com
+#   cerebras   — Llama 3.3 70B, 1M tokens/day free   → cloud.cerebras.ai
+#   openrouter — DeepSeek R1 free, Qwen3 480B free   → openrouter.ai/keys
+#   deepseek   — 5M tokens free (30 days)            → platform.deepseek.com
+#   mistral    — 1B tokens/month free                 → console.mistral.ai
+# Paid options:
+#   claude     — Claude Opus/Haiku                    → console.anthropic.com
+#   openai     — GPT-4o-mini                          → platform.openai.com
+#   gemini     — Gemini 2.0 Flash                     → aistudio.google.com
+AI_PROVIDER=groq
+
+# API keys — fill in the one matching your provider
+GROQ_API_KEY=
+GROQ_MODEL=llama-3.3-70b-versatile
+
+CEREBRAS_API_KEY=
+CEREBRAS_MODEL=llama-3.3-70b
+
+OPENROUTER_API_KEY=
+OPENROUTER_MODEL=deepseek/deepseek-r1:free
+
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-chat
+
+MISTRAL_API_KEY=
+MISTRAL_MODEL=mistral-large-latest
+
+ANTHROPIC_API_KEY=
+OPENAI_API_KEY=
+GEMINI_API_KEY=
+```
+
+> **Quickest free setup:** Sign up at [console.groq.com](https://console.groq.com), grab a key, set `AI_PROVIDER=groq` and `GROQ_API_KEY=your-key`. Done.
+
+#### Web app (`apps/web/.env.local`)
+
+```env
 ENGINE_URL=http://localhost:8000
 RENDERER_URL=http://localhost:3001
 ```
