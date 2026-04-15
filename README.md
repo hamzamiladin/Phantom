@@ -1,16 +1,70 @@
-# Phantom
+<p align="center">
+  <img src="docs/assets/viewer-fibonacci.png" alt="Phantom — animated code explanation" width="100%" />
+</p>
 
-**AI-generated animated explanations of code.** Paste any function and Phantom produces a cinematic [Remotion](https://remotion.dev) animation of what it actually does when it runs — recursion trees unfolding, control flow branching, variables mutating step by step.
+<h1 align="center">Phantom</h1>
 
-Built for engineers who learn visually. Inspired by [3Blue1Brown](https://www.3blue1brown.com/).
+<p align="center">
+  <strong>AI-generated animated explanations of code.</strong><br>
+  Paste any function. Get a cinematic animation of what it actually does when it runs.
+</p>
 
-https://github.com/user-attachments/assets/placeholder
+<p align="center">
+  <a href="#getting-started">Get Started</a> &nbsp;&bull;&nbsp;
+  <a href="#how-it-works">How It Works</a> &nbsp;&bull;&nbsp;
+  <a href="#the-viewer">Viewer</a> &nbsp;&bull;&nbsp;
+  <a href="#deployment">Deploy</a> &nbsp;&bull;&nbsp;
+  <a href="#contributing">Contribute</a>
+</p>
+
+---
+
+## Demo
+
+Recursion tree animation generated from a 10-line fibonacci function:
+
+https://github.com/hamzamiladin/Phantom/raw/main/docs/assets/demo.mp4
+
+---
+
+## What is this?
+
+Phantom takes source code and produces narrated, step-by-step animated explanations — recursion trees unfolding, control flow branching, variables mutating, data structures building. Built for engineers who learn visually.
+
+The LLM never generates animation code from scratch. Instead, Phantom ships **hand-crafted Remotion templates** and the AI's job is to pick a template and fill in its parameters. A constrained, structured task it does reliably.
+
+If no template matches, it falls back to a generic step-through animation. Never a blank screen.
+
+---
+
+## The viewer
+
+The viewer page is where the learning happens. Two-panel layout: animation on the left, interactive explanation on the right.
+
+### Dijkstra's shortest path algorithm
+
+<img src="docs/assets/viewer-dijkstra.png" alt="Viewer — Dijkstra's algorithm with grid visualization and step-by-step explanation" width="100%" />
+
+The animation shows a grid-based shortest path visualization. The right panel breaks it down — current step highlighted, variable state displayed, code line tracked, complexity analysis shown.
+
+### Fibonacci recursion
+
+<img src="docs/assets/viewer-fibonacci.png" alt="Viewer — Fibonacci recursion with tree visualization and pattern badges" width="100%" />
+
+Recursive calls visualized as growing circles. The explanation panel shows strategy badges (`self-reference`, `recursion`), code context, and builds up to the key insight: how memoization reduces 25 calls to 9.
+
+### Viewer features
+
+- **Click any step** to jump the animation to that point
+- **Speed controls** — 0.5x / 1x / 1.5x / 2x playback
+- **Variable state** — see values change at each execution step
+- **Code tracking** — active line highlighted in context
+- **Ask tab** — chat with AI about the code for follow-up questions
+- **Share & download** — shareable link or MP4 export
 
 ---
 
 ## How it works
-
-Phantom is a multi-stage pipeline that transforms source code into narrated animations:
 
 ```
   Your code
@@ -29,9 +83,82 @@ Phantom is a multi-stage pipeline that transforms source code into narrated anim
   Animated explanation with step-by-step narration
 ```
 
-**The key design decision:** the LLM never generates Remotion code from scratch. Instead, Phantom ships hand-crafted animation templates (recursion trees, control flow, sorting, etc.) and the LLM's job is to *pick a template and fill in its parameters* — a constrained, structured task it does reliably.
+### The pipeline in detail
 
-If no template matches the code, it falls back to `ControlFlowBranch` — a generic step-through animation with variable state panels. Never a blank screen.
+**Parser** — [tree-sitter](https://tree-sitter.github.io/) extracts the AST, function signatures, control flow, and recursive patterns. Supports Python, TypeScript, JavaScript, C#, and Rust.
+
+**Analyzer** — Claude Opus 4.6 reasons about what the code *conceptually does* and produces a structured `VisualizationIntent`:
+
+```json
+{
+  "code_type": "recursive_function",
+  "entry_point": "fibonacci",
+  "sample_input": 5,
+  "notable_patterns": ["binary_recursion", "overlapping_subproblems"],
+  "time_complexity": "O(2^n)",
+  "space_complexity": "O(n)",
+  "key_insight": "Each call branches into two subcalls, creating exponential work"
+}
+```
+
+**Planner** — Selects the best animation template from the registry and fills in structured parameters. Falls back to `ControlFlowBranch` if nothing specialized matches.
+
+**Composer** — Validates output against the template's Zod schema (shared across Python and TypeScript). Catches AI hallucinations before they hit the renderer.
+
+**Narrator** — Claude Haiku 4.5 generates timed captions synced to animation beats. Each caption has a phase (overview, mechanics, execution, insight) and descriptive text.
+
+**Renderer** — Node.js worker runs `@remotion/renderer` to produce MP4 + poster PNG. Uploads to cloud storage. The web app polls for completion.
+
+---
+
+## Animation templates
+
+Hand-crafted Remotion compositions with typed props. The AI pipeline selects and parameterizes them.
+
+| Template | Visualizes | Code types |
+|---|---|---|
+| **RecursionTree** | Binary tree unfolding with duplicate-call highlighting | Recursive functions (fibonacci, factorial) |
+| **ControlFlowBranch** | Step-by-step execution with concept shapes and variable state | Everything else — generic fallback |
+
+### Concept shapes
+
+The ControlFlowBranch template renders specialized SVG visualizations based on what the code does:
+
+| Shape | Triggers on | What it shows |
+|---|---|---|
+| Recursive function | `recursive_function` | Nested call frames stacking |
+| Sorting | `sorting`, `comparison` | Bars swapping and comparing |
+| Async | `async`, `concurrent` | Parallel timeline lanes |
+| Tree traversal | `tree_traversal` | Binary tree with progressive node visits |
+| Hash map | `hash_map`, `dictionary` | Bucket slots with collision chaining |
+| Class definition | `class_definition`, `class` | UML-style box with fields and methods |
+| Heap / graph | `heap`, `graph` | Connected nodes with weighted edges |
+| Dynamic programming | `dynamic_programming` | Grid/table filling progressively |
+| React components | `react`, `component` | Component tree hierarchy |
+
+### Reusable primitives
+
+| Primitive | Purpose |
+|---|---|
+| `AnimatedTree` | Tree structures with spring animations and edge drawing |
+| `AnimatedArray` | Array visualization with highlighting and swaps |
+| `Caption` | Timed narration with optional subtext |
+| `CodeHighlight` | Syntax-highlighted code with active line indicator |
+| `VariablePanel` | Key-value variable state display |
+
+---
+
+## Tech stack
+
+| Layer | Technology |
+|---|---|
+| Monorepo | Turborepo + pnpm workspaces |
+| Web app | Next.js 15, React 19, Tailwind CSS v4, TypeScript |
+| Animations | Remotion 4, React, SVG |
+| AI pipeline | Python 3.12, Anthropic SDK, Pydantic v2 |
+| Models | Claude Opus 4.6 (analysis) + Claude Haiku 4.5 (narration) |
+| Rendering | `@remotion/renderer`, BullMQ |
+| Playback | `@remotion/player` (browser-side) |
 
 ---
 
@@ -40,76 +167,28 @@ If no template matches the code, it falls back to `ControlFlowBranch` — a gene
 ```
 phantom/
 ├── apps/
-│   ├── web/                     # Next.js web app (paste code, watch animation)
+│   ├── web/                     # Next.js web app
 │   │   ├── app/
 │   │   │   ├── page.tsx         # Landing page with code editor
 │   │   │   ├── v/[id]/         # Shareable animation viewer
 │   │   │   └── api/            # Generate + status endpoints
-│   │   └── components/         # UI components
-│   └── renderer/               # Node.js rendering worker (BullMQ + Remotion)
+│   │   └── components/
+│   └── renderer/               # Node.js rendering worker
 │
 ├── packages/
 │   ├── animations/             # Remotion templates + primitives
 │   │   └── src/
-│   │       ├── templates/      # RecursionTree, ControlFlowBranch, ...
-│   │       └── primitives/     # AnimatedTree, Caption, CodeHighlight, ...
-│   ├── engine/                 # Python AI pipeline (parser → analyzer → planner → composer → narrator)
+│   │       ├── templates/      # RecursionTree, ControlFlowBranch
+│   │       └── primitives/     # AnimatedTree, Caption, etc.
+│   ├── engine/                 # Python AI pipeline
 │   │   └── src/phantom_engine/
-│   └── shared/                 # TypeScript types shared across packages
+│   └── shared/                 # Shared TypeScript types
 │
-├── turbo.json                  # Turborepo config
-├── pnpm-workspace.yaml         # pnpm workspaces
+├── docs/assets/               # Screenshots and demo video
+├── turbo.json
+├── pnpm-workspace.yaml
 └── package.json
 ```
-
----
-
-## Animation templates
-
-Each template is a hand-crafted Remotion composition with typed props. The AI pipeline selects and parameterizes them.
-
-| Template | What it visualizes | Code types |
-|---|---|---|
-| **RecursionTree** | Binary tree unfolding with duplicate-call highlighting | Recursive functions (fibonacci, factorial, tree traversal) |
-| **ControlFlowBranch** | Step-by-step execution with variable state, code highlighting, and concept shapes | Everything else — generic fallback that works for any code |
-
-### Concept shapes (within ControlFlowBranch)
-
-The ControlFlowBranch template renders specialized SVG visualizations based on what the code does:
-
-- **Recursive function** — nested call frames stacking
-- **Sorting algorithm** — bars swapping and comparing
-- **Async/concurrent** — parallel timeline lanes
-- **React/components** — component tree hierarchy
-- **Tree traversal** — binary tree with progressive node visits
-- **Hash map / dictionary** — bucket slots with collision chaining
-- **Class definition** — UML-style class box with fields and methods
-- **Heap / graph** — connected nodes with weighted edges
-- **Dynamic programming** — grid/table filling progressively
-
-### Reusable primitives
-
-| Primitive | Purpose |
-|---|---|
-| `AnimatedTree` | Renders tree structures with spring animations and edge drawing |
-| `AnimatedArray` | Array visualization with element highlighting and swaps |
-| `Caption` | Timed narration text with optional subtext |
-| `CodeHighlight` | Syntax-highlighted code block with active line indicator |
-| `VariablePanel` | Key-value display of variable state at each step |
-
----
-
-## Tech stack
-
-| Layer | Technology |
-|---|---|
-| **Monorepo** | Turborepo + pnpm workspaces |
-| **Web app** | Next.js 15, React 19, Tailwind CSS v4, TypeScript |
-| **Animations** | Remotion 4, React, SVG |
-| **AI pipeline** | Python 3.12, Anthropic SDK, Pydantic v2 |
-| **Models** | Claude Opus 4.6 (analysis + planning), Claude Haiku 4.5 (narration) |
-| **Rendering** | `@remotion/renderer`, BullMQ job queue |
-| **Playback** | `@remotion/player` (browser-side) |
 
 ---
 
@@ -120,25 +199,19 @@ The ControlFlowBranch template renders specialized SVG visualizations based on w
 - **Node.js** 20+
 - **pnpm** 9+
 - **Python** 3.12+
-- **uv** (Python package manager) — `curl -LsSf https://astral.sh/uv/install.sh | sh`
-- **Anthropic API key** — get one at [console.anthropic.com](https://console.anthropic.com)
+- **uv** — `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **Anthropic API key** — [console.anthropic.com](https://console.anthropic.com)
 
-### 1. Clone and install
+### Install
 
 ```bash
-git clone https://github.com/your-username/phantom.git
-cd phantom
+git clone https://github.com/hamzamiladin/Phantom.git
+cd Phantom
 pnpm install
+cd packages/engine && uv sync && cd ../..
 ```
 
-### 2. Set up the Python engine
-
-```bash
-cd packages/engine
-uv sync
-```
-
-### 3. Configure environment
+### Configure
 
 Create `apps/web/.env.local`:
 
@@ -148,100 +221,65 @@ ENGINE_URL=http://localhost:8000
 RENDERER_URL=http://localhost:3001
 ```
 
-### 4. Run the development servers
-
-In separate terminals:
+### Run
 
 ```bash
-# Terminal 1: Engine (Python API)
+# Terminal 1 — AI engine
 cd packages/engine
 uv run uvicorn phantom_engine.server:app --reload --port 8000
 
-# Terminal 2: Renderer worker
+# Terminal 2 — Renderer
 cd apps/renderer
 pnpm dev
 
-# Terminal 3: Web app
+# Terminal 3 — Web app
 cd apps/web
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000), paste a function, and click Generate.
+Open [localhost:3000](http://localhost:3000), paste a function, click Generate.
 
 ---
 
-## How the AI pipeline works
+## Deployment
 
-### Stage 1 — Parser
+| Service | Deploy to | Why |
+|---|---|---|
+| **Web app** (`apps/web`) | [Vercel](https://vercel.com) | Zero-config Next.js hosting |
+| **Engine** (`packages/engine`) | [Railway](https://railway.app) | Stateless Python HTTP service |
+| **Renderer** (`apps/renderer`) | [Railway](https://railway.app) + Redis add-on | Needs Chromium + job queue |
 
-Uses [tree-sitter](https://tree-sitter.github.io/) to parse source code into an AST. Extracts function signatures, control flow patterns, recursive calls, and metadata. Supports Python, TypeScript, JavaScript, C#, and Rust.
+### Web app on Vercel
 
-### Stage 2 — Semantic Analyzer
+1. Import repo at [vercel.com/new](https://vercel.com/new)
+2. Root directory: `apps/web`
+3. Build command: `cd ../.. && npx turbo run build --filter=@phantom/web`
+4. Add env vars: `ANTHROPIC_API_KEY`, `ENGINE_URL`, `RENDERER_URL`
 
-Sends the parsed AST + raw source to **Claude Opus 4.6** with structured output. The model reasons about *what the code conceptually does* and produces a `VisualizationIntent`:
+### Engine on Railway
 
-```json
-{
-  "code_type": "recursive_function",
-  "language": "python",
-  "entry_point": "fibonacci",
-  "sample_input": 5,
-  "notable_patterns": ["binary_recursion", "overlapping_subproblems"],
-  "time_complexity": "O(2^n)",
-  "space_complexity": "O(n)",
-  "key_insight": "Each call branches into two subcalls, creating exponential work"
-}
-```
+1. New service → connect GitHub repo → root: `packages/engine`
+2. Start command: `uv run uvicorn phantom_engine.server:app --host 0.0.0.0 --port $PORT`
+3. Add env var: `ANTHROPIC_API_KEY`
 
-### Stage 3 — Scene Planner
+### Renderer on Railway
 
-Takes the `VisualizationIntent` and selects the best animation template from the registry. Outputs a `ScenePlan` with the template ID and structured parameters. Falls back to `ControlFlowBranch` if no specialized template matches.
-
-### Stage 4 — Composer
-
-Validates the planner output against the template's Zod schema (shared between Python and TypeScript via `packages/shared`). Produces the final Remotion props JSON. This catches AI hallucinations before they reach the renderer.
-
-### Stage 5 — Narrator
-
-Sends the scene plan to **Claude Haiku 4.5** to generate timed narration captions. Each caption has a start time, end time, phase label, and text that syncs with the animation beats.
-
-### Stage 6 — Renderer
-
-A Node.js worker picks up the job from a BullMQ queue, runs `@remotion/renderer` to produce an MP4 and poster PNG, and uploads to cloud storage. The web app polls for completion and displays the result.
+1. Add a Redis database from Railway dashboard
+2. New service → root: `apps/renderer` → uses included `Dockerfile`
+3. Add env vars: `REDIS_URL` (from Redis add-on), storage credentials
+4. Needs **2GB+ RAM** for Remotion rendering
 
 ---
-
-## The viewer page
-
-The `/v/[id]` viewer is a three-zone layout designed for learning:
-
-**Left (60%)** — Remotion Player with speed controls (0.5x / 1x / 1.5x / 2x)
-
-**Right (40%)** — Interactive explanation panel:
-- Step-by-step timeline synced to animation frames (click any step to jump there)
-- Variable state table showing current values at each step
-- Code snippet with highlighted active line
-- Complexity badges and key insight card
-- AI chat for follow-up questions about the code
-
-The panel uses frame-math sync (`currentFrame / FRAMES_PER_STEP`) for precise animation-to-explanation alignment.
-
----
-
 
 ## Architecture decisions
 
-**Why Remotion over Motion Canvas?**
-Remotion has active maintenance (2026), Lambda parallel rendering, a React-based API, and a large ecosystem. Motion Canvas is effectively unmaintained.
+**Why Remotion?** Active maintenance, Lambda parallel rendering, React-based API, large ecosystem. Motion Canvas is unmaintained as of 2026.
 
-**Why templates instead of LLM-generated code?**
-LLMs are unreliable at generating complex Remotion compositions from scratch. Templates are hand-crafted for quality, and the LLM fills in parameters — a constrained task it does consistently well.
+**Why templates instead of LLM-generated code?** LLMs can't reliably generate complex Remotion compositions. Templates are hand-crafted for quality — the LLM fills in parameters, which it does consistently.
 
-**Why two Claude models?**
-Opus for analysis and planning (needs deep reasoning about code semantics). Haiku for narration (fast, cheap, good enough for caption text). This keeps costs ~$0.05-0.15 per generation.
+**Why two Claude models?** Opus for analysis (deep reasoning). Haiku for narration (fast, cheap). Keeps cost to ~$0.05-0.15 per generation.
 
-**Why frame-math sync instead of timestamps?**
-The animation runs at 30fps with a fixed `FRAMES_PER_STEP = 72` (2.4s per step). Deriving the active step from `Math.floor(currentFrame / 72)` is frame-perfect and doesn't depend on narration timing data, which can drift.
+**Why frame-math sync?** Animation runs at 30fps, 72 frames per step. `Math.floor(currentFrame / 72)` gives frame-perfect panel sync without depending on narration timestamps.
 
 ---
 
@@ -249,18 +287,18 @@ The animation runs at 30fps with a fixed `FRAMES_PER_STEP = 72` (2.4s per step).
 
 1. Fork the repo
 2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Make your changes
-4. Run type checks: `npx tsc --noEmit` in both `apps/web` and `packages/animations`
+3. Make changes
+4. Type check: `npx tsc --noEmit` in `apps/web` and `packages/animations`
 5. Submit a pull request
 
-### Adding a new animation template
+### Adding a new template
 
-1. Create a new file in `packages/animations/src/templates/`
-2. Export the component and a default props constant
-3. Add the Zod schema to `packages/shared/src/types.ts`
-4. Register the composition in `packages/animations/src/Root.tsx`
-5. Add a player wrapper in `apps/web/components/AnimationPlayer.tsx`
-6. Update the engine's planner to recognize the new code type
+1. Create component in `packages/animations/src/templates/`
+2. Export component + default props
+3. Add Zod schema to `packages/shared/src/types.ts`
+4. Register in `packages/animations/src/Root.tsx`
+5. Add player wrapper in `apps/web/components/AnimationPlayer.tsx`
+6. Update engine planner to recognize the new code type
 
 ---
 
