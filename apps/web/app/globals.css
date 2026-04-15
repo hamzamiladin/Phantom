@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0A0E18;
+  --bg2: #0D1320;
+  --teal: #4ECDC4;
+  --coral: #FF6B6B;
+  --green: #4ADE80;
+  --text: #F0F6FC;
+  --muted: #8B949E;
+  --border: rgba(255, 255, 255, 0.07);
+  --teal-border: rgba(78, 205, 196, 0.18);
+  --card-bg: rgba(255, 255, 255, 0.025);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dot-grid background */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(78, 205, 196, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Subtle scanline overlay */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.03) 3px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All content sits above the bg effects */
+#__next, main { position: relative; z-index: 1; }
+
+/* Teal glow utility */
+.teal-glow {
+  box-shadow: 0 0 24px rgba(78, 205, 196, 0.15), 0 0 2px rgba(78, 205, 196, 0.3);
+}
+
+/* Pulse ring animation for the generate button */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease forwards;
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+/* Card style */
+.phantom-card {
+  background: var(--card-bg);
+  border: 1px solid var(--teal-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}

@@ -1,0 +1,13 @@
+{
+  "name": "phantom",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "render": "turbo run render"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3"
+  }
+}

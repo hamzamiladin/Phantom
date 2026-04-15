@@ -1,0 +1,25 @@
+{
+  "name": "@phantom/animations",
+  "version": "0.0.1",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "render": "remotion render src/remotion-entry.tsx RecursionTree out/recursion_tree_demo.mp4 --gl=swangle",
+    "studio": "remotion studio src/remotion-entry.tsx"
+  },
+  "dependencies": {
+    "@phantom/shared": "workspace:*",
+    "remotion": "^4.0.290",
+    "@remotion/renderer": "^4.0.290",
+    "@remotion/cli": "^4.0.290",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  }
+}
